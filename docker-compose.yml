@@ -1,0 +1,32 @@
+services:
+  backend:
+    build: ./backend
+    container_name: finguide_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      # Keep SQLite database local on host between container restarts
+      - sqlite_data:/app/database_data
+    environment:
+      - PORT=8000
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: finguide_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  sqlite_data:

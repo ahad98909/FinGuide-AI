@@ -1,0 +1,1 @@
+# FinGuide AI routes package

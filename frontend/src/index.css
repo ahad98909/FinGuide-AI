@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream-50: #faf9f5;
+  --color-cream-100: #f4f3ed;
+  --color-cream-200: #e6e4d7;
+  --color-cream-300: #d0cebb;
+  --color-cream-400: #b4b097;
+  --color-cream-500: #9b977b;
+  --color-cream-600: #7c785f;
+  
+  --color-forest-50: #f4f6f4;
+  --color-forest-100: #e5ebe6;
+  --color-forest-200: #cbdad0;
+  --color-forest-300: #a3bead;
+  --color-forest-400: #759981;
+  --color-forest-500: #527c60;
+  --color-forest-600: #3e624a;
+  --color-forest-700: #324e3c;
+  --color-forest-800: #2a4032;
+  --color-forest-900: #1b321f;
+  --color-forest-950: #112014;
+  
+  --color-emerald-250: #a7f3d0;
+  --color-emerald-450: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  body {
+    @apply bg-[#112014] text-slate-100 transition-colors duration-200 antialiased;
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Custom premium glassmorphism tokens */
+.glass-panel {
+  @apply bg-[#112014]/90 dark:bg-[#0c180e]/95 backdrop-blur-xl border border-white/10 dark:border-emerald-900/30 shadow-2xl;
+}
+
+.glass-card {
+  @apply bg-[#152a1b]/65 dark:bg-[#112316]/75 backdrop-blur-xl border border-white/10 dark:border-emerald-500/15 shadow-xl shadow-black/25 rounded-[22px] p-6 transition-all duration-300 hover:border-emerald-500/35 hover:shadow-emerald-950/30 relative;
+}
+
+.glass-card-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0) 70%);
+  pointer-events: none;
+}
+
+/* Modern scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-emerald-900/40 rounded-full hover:bg-emerald-800/60;
+}
+
+/* Global Select & Option visibility fix */
+select {
+  color: #0f172a;
+}
+select option {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 6px 10px;
+}

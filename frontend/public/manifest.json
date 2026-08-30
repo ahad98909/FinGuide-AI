@@ -1,0 +1,15 @@
+{
+  "short_name": "FinGuide AI",
+  "name": "FinGuide AI - Multilingual Co-Pilot",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#f4f3ed",
+  "theme_color": "#2b4d32",
+  "display": "standalone"
+}

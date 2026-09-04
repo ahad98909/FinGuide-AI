@@ -95,7 +95,11 @@ export const Landing: React.FC<LandingProps> = ({ onStartRegistration, onTryDemo
         <div className="flex items-center gap-4">
           <button
             onClick={onLoginClick}
-            className="flex items-center gap-2 border border-emerald-800 hover:bg-white/5 text-emerald-350 text-sm font-bold px-5 py-2.5 rounded-xl transition-all"
+            onTouchStart={(e) => {
+              e.preventDefault();
+              onLoginClick();
+            }}
+            className="flex items-center gap-2 border border-emerald-800 hover:bg-white/5 text-emerald-350 text-sm font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer"
           >
             <User className="w-4 h-4" />
             {t('login')}
@@ -129,14 +133,22 @@ export const Landing: React.FC<LandingProps> = ({ onStartRegistration, onTryDemo
           <div className="flex flex-col sm:flex-row items-center gap-4 max-w-md">
             <button
               onClick={onStartRegistration}
-              className="w-full sm:w-auto bg-[#2b4d32] hover:bg-[#345e3d] text-white font-bold px-8 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+              onTouchStart={(e) => {
+                e.preventDefault();
+                onStartRegistration();
+              }}
+              className="w-full sm:w-auto bg-[#2b4d32] hover:bg-[#345e3d] text-white font-bold px-8 py-4 rounded-xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 transform hover:-translate-y-0.5 cursor-pointer"
             >
               {t('get_started')} <ArrowRight className="w-4 h-4" />
             </button>
             
             <button
               onClick={onTryDemo}
-              className="w-full sm:w-auto bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold px-8 py-4 rounded-xl transition-all text-sm flex items-center justify-center gap-2 backdrop-blur-md"
+              onTouchStart={(e) => {
+                e.preventDefault();
+                onTryDemo();
+              }}
+              className="w-full sm:w-auto bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold px-8 py-4 rounded-xl transition-all text-sm flex items-center justify-center gap-2 backdrop-blur-md cursor-pointer"
             >
               {t('explore_features')} <ArrowRight className="w-4 h-4" />
             </button>

@@ -260,8 +260,13 @@ export const FinGuideApp: React.FC = () => {
         <div dir={dir} className="min-h-screen bg-[#f4f3ed] text-slate-800 flex items-center justify-center p-6 selection:bg-[#2b4d32]/10 font-sans relative">
           {/* Back to landing button */}
           <button 
+            type="button"
             onClick={() => setAuthView('landing')}
-            className={`absolute top-6 ${dir === 'rtl' ? 'right-6' : 'left-6'} flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#2b4d32] transition-colors`}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              setAuthView('landing');
+            }}
+            className={`absolute top-6 ${dir === 'rtl' ? 'right-6' : 'left-6'} flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#2b4d32] transition-colors cursor-pointer z-20`}
           >
             <ArrowLeft className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
             {t('back_to_home')}
@@ -496,7 +501,7 @@ export const FinGuideApp: React.FC = () => {
                 <button
                   type="submit"
                   disabled={authLoading}
-                  className="w-full bg-[#2b4d32] hover:bg-[#386242] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-emerald-900/10 text-xs flex items-center justify-center gap-2 mt-2"
+                  className="w-full bg-[#2b4d32] hover:bg-[#386242] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-emerald-900/10 text-xs flex items-center justify-center gap-2 mt-2 cursor-pointer"
                 >
                   {authLoading ? '...' : t('login')} <ArrowRight className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
                 </button>
@@ -510,8 +515,13 @@ export const FinGuideApp: React.FC = () => {
 
               {/* Google continue */}
               <button
+                type="button"
                 onClick={handleDemoLogin}
-                className="w-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl transition-all text-xs flex items-center justify-center gap-2"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  handleDemoLogin();
+                }}
+                className="w-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl transition-all text-xs flex items-center justify-center gap-2 cursor-pointer"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -526,7 +536,15 @@ export const FinGuideApp: React.FC = () => {
               <div className="mt-6 text-center text-xs">
                 <p className="text-slate-500 font-medium">
                   {t('dont_have_account')}{' '}
-                  <button onClick={() => setAuthView('register')} className="text-[#2b4d32] font-black hover:underline">
+                  <button 
+                    type="button"
+                    onClick={() => setAuthView('register')} 
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      setAuthView('register');
+                    }}
+                    className="text-[#2b4d32] font-black hover:underline cursor-pointer"
+                  >
                     {t('create_account')}
                   </button>
                 </p>
@@ -543,8 +561,13 @@ export const FinGuideApp: React.FC = () => {
         <div dir={dir} className="min-h-screen bg-[#f4f3ed] text-slate-850 flex items-center justify-center p-6 selection:bg-[#2b4d32]/10 font-sans relative">
           {/* Back to landing button */}
           <button 
+            type="button"
             onClick={() => setAuthView('landing')}
-            className={`absolute top-6 ${dir === 'rtl' ? 'right-6' : 'left-6'} flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#2b4d32] transition-colors`}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              setAuthView('landing');
+            }}
+            className={`absolute top-6 ${dir === 'rtl' ? 'right-6' : 'left-6'} flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#2b4d32] transition-colors cursor-pointer z-20`}
           >
             <ArrowLeft className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
             {t('back_to_home')}
@@ -814,7 +837,7 @@ export const FinGuideApp: React.FC = () => {
                 <button
                   type="submit"
                   disabled={authLoading}
-                  className="w-full bg-[#2b4d32] hover:bg-[#386242] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-emerald-900/10 text-xs flex items-center justify-center gap-2 mt-2"
+                  className="w-full bg-[#2b4d32] hover:bg-[#386242] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-emerald-900/10 text-xs flex items-center justify-center gap-2 mt-2 cursor-pointer"
                 >
                   {authLoading ? '...' : t('register')} <ArrowRight className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
                 </button>
@@ -824,7 +847,15 @@ export const FinGuideApp: React.FC = () => {
               <div className="mt-6 text-center text-xs">
                 <p className="text-slate-500 font-medium">
                   {t('already_have_account')}{' '}
-                  <button onClick={() => setAuthView('login')} className="text-[#2b4d32] font-black hover:underline">
+                  <button 
+                    type="button"
+                    onClick={() => setAuthView('login')} 
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      setAuthView('login');
+                    }}
+                    className="text-[#2b4d32] font-black hover:underline cursor-pointer"
+                  >
                     {t('login_here')}
                   </button>
                 </p>

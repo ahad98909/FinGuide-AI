@@ -228,3 +228,25 @@ select option {
   font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', system-ui, sans-serif;
 }
 
+/* ============================================================
+   MOBILE TOUCH FIX - ONLY FOR MOBILE DEVICES
+   Does NOT affect desktop
+   ============================================================ */
+
+/* Improve touch targets and responsiveness on mobile */
+@media (max-width: 768px) {
+  button,
+  a,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"] {
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer !important;
+  }
+  
+  form {
+    touch-action: manipulation !important;
+  }
+}
+

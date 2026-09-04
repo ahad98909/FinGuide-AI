@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional, Dict, Any
+import datetime
 
 class UserBase(BaseModel):
     name: str
@@ -68,6 +69,18 @@ class TransactionOut(TransactionBase):
     class Config:
         from_attributes = True
 
+class TransactionSummary(BaseModel):
+    total_income: float
+    total_expenses: float
+    balance: float
+    income_count: int
+    expense_count: int
+
+class TransactionListResponse(BaseModel):
+    transactions: List[TransactionOut]
+    summary: TransactionSummary
+
+
 class GoalBase(BaseModel):
     name: str
     target_amount: float
@@ -110,18 +123,46 @@ class NotificationOut(BaseModel):
     class Config:
         from_attributes = True
 
+# Chat Session & Message Schemas
+class ChatMessageOut(BaseModel):
+    id: int
+    session_id: int
+    role: str
+    content: str
+    language: Optional[str] = "en"
+    created_at: Optional[datetime.datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class ChatSessionOut(BaseModel):
+    id: int
+    user_id: int
+    title: str
+    language: str
+    created_at: Optional[datetime.datetime] = None
+    updated_at: Optional[datetime.datetime] = None
+    messages: Optional[List[ChatMessageOut]] = []
+
+    class Config:
+        from_attributes = True
+
 # AI Schemas
 class AIChatRequest(BaseModel):
     message: str
+    language: Optional[str] = "en"
+    session_id: Optional[int] = None
 
 class AIChatAction(BaseModel):
     type: str  # CREATE_GOAL, ANALYZE_EXPENSES, CREATE_BUDGET, WHAT_IF, EXPLAIN_FINANCE, SCAM_ANALYSIS, GENERAL_FINANCIAL_QUESTION, NONE
+    label: Optional[str] = None
     data: Optional[Dict[str, Any]] = None
 
 class AIChatResponse(BaseModel):
     intent: str
     response: str
     action: Optional[AIChatAction] = None
+    session_id: Optional[int] = None
 
 class AIScamRequest(BaseModel):
     text: str
@@ -166,6 +207,10 @@ class ReceiptScanResponse(BaseModel):
     merchant: str
     date: str
     amount: float
+    total_amount: Optional[float] = None
     category: str
-    items: str
-    confidence: float
+    items: Any
+    confidence: float = 0.95
+    consumer_name: Optional[str] = None
+    account_number: Optional[str] = None
+

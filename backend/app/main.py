@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
 from .routes import auth, dashboard, transactions, goals, prices, ai, notifications
+from .api import chat, receipts
 
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)
@@ -30,8 +31,10 @@ app.include_router(dashboard.router)
 app.include_router(transactions.router)
 app.include_router(goals.router)
 app.include_router(prices.router)
+app.include_router(chat.router)
 app.include_router(ai.router)
 app.include_router(notifications.router)
+app.include_router(receipts.router)
 
 @app.get("/")
 def read_root():

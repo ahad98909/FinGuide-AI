@@ -77,7 +77,7 @@ export const ScamDetector: React.FC = () => {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder={t('scam_placeholder')}
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-[#2b4d32]/50 focus:ring-[#2b4d32]/20 rounded-xl p-4 text-xs outline-none transition-all placeholder-slate-455 dark:placeholder-slate-600 resize-none leading-relaxed"
+              className="w-full bg-white border border-slate-300 focus:border-[#2b4d32] focus:ring-4 focus:ring-[#2b4d32]/10 rounded-xl p-4 text-xs text-slate-900 font-medium outline-none transition-all placeholder:text-slate-400 resize-none leading-relaxed"
             />
             <button
               type="submit"

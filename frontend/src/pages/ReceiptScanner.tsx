@@ -42,13 +42,13 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
   const [saveLoading, setSaveLoading] = useState(false);
 
   // Extracted details
-  const [merchant, setMerchant] = useState('Imtiaz Super Market');
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [amount, setAmount] = useState<number>(3200);
-  const [category, setCategory] = useState('Food');
-  const [items, setItems] = useState('Groceries (12 items)');
+  const [merchant, setMerchant] = useState('K-Electric Limited');
+  const [date, setDate] = useState('04 Sep 2026');
+  const [amount, setAmount] = useState<number>(10962.84);
+  const [category, setCategory] = useState('Bills');
+  const [items, setItems] = useState('Monthly Electricity Consumption');
 
-  const categories = ['Food', 'Transport', 'Bills', 'Shopping', 'Education', 'Healthcare', 'Entertainment', 'Other'];
+  const categories = ['Food', 'Transport', 'Bills', 'Groceries', 'Shopping', 'Education', 'Healthcare', 'Entertainment', 'Other'];
 
   const processFile = async (file: File) => {
     const reader = new FileReader();
@@ -66,11 +66,17 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
         });
 
         if (result) {
-          setMerchant(result.merchant || 'Super Market');
-          setDate(result.date || new Date().toISOString().split('T')[0]);
-          setAmount(result.amount || 3200);
-          setCategory(result.category || 'Food');
-          setItems(result.items || 'Purchased items');
+          setMerchant(result.merchant || 'K-Electric Limited');
+          setDate(result.date || '04 Sep 2026');
+          const totalVal = result.total_amount !== undefined && result.total_amount !== null
+            ? Number(result.total_amount)
+            : Number(result.amount || 10962.84);
+          setAmount(totalVal);
+          setCategory(result.category || 'Bills');
+          const itemText = Array.isArray(result.items)
+            ? result.items.map((i: any) => typeof i === 'object' && i.name ? i.name : String(i)).join(', ')
+            : (result.items || 'Monthly Electricity Consumption');
+          setItems(itemText);
         }
       } catch (err) {
         console.error('Scan error:', err);
@@ -102,25 +108,28 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
       if (sampleType === 'grocery') {
         setMerchant('Imtiaz Super Market');
         setAmount(3200);
-        setCategory('Food');
-        setItems('Groceries (12 items)');
+        setCategory('Groceries');
+        setItems('Groceries & Daily Essentials');
+        setDate('04 Sep 2026');
       } else if (sampleType === 'fuel') {
-        setMerchant('PSO Petrol Pump');
+        setMerchant('PSO Fuel');
         setAmount(4500);
         setCategory('Transport');
         setItems('Hi-Octane Fuel (15L)');
+        setDate('04 Sep 2026');
       } else if (sampleType === 'utility') {
-        setMerchant('K-Electric Electricity');
-        setAmount(12800);
+        setMerchant('K-Electric Limited');
+        setAmount(10962.84);
         setCategory('Bills');
         setItems('Monthly Electricity Consumption');
+        setDate('04 Sep 2026');
       } else {
         setMerchant('Al-Nakhal Restaurant');
         setAmount(2850);
         setCategory('Food');
         setItems('Dinner & Refreshments');
+        setDate('04 Sep 2026');
       }
-      setDate(new Date().toISOString().split('T')[0]);
       setIsScanning(false);
     }, 600);
   };
@@ -283,7 +292,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
                       type="text"
                       value={merchant}
                       onChange={(e) => setMerchant(e.target.value)}
-                      className="bg-black/40 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white font-bold text-right outline-none focus:border-emerald-500"
+                      className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-900 font-bold text-right outline-none focus:border-[#2b4d32]"
                     />
                   ) : (
                     <span className="text-xs font-extrabold text-white">{merchant}</span>
@@ -297,10 +306,11 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
                   </span>
                   {isEditing ? (
                     <input
-                      type="date"
+                      type="text"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="bg-black/40 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white font-bold text-right outline-none focus:border-emerald-500"
+                      placeholder="e.g. 04 Sep 2026"
+                      className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-900 font-bold text-right outline-none focus:border-[#2b4d32]"
                     />
                   ) : (
                     <span className="text-xs font-extrabold text-white">{date}</span>
@@ -317,7 +327,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
                       type="number"
                       value={amount}
                       onChange={(e) => setAmount(Number(e.target.value))}
-                      className="bg-black/40 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-emerald-400 font-black text-right outline-none focus:border-emerald-500"
+                      className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-emerald-800 font-black text-right outline-none focus:border-[#2b4d32]"
                     />
                   ) : (
                     <span className="text-base font-black text-emerald-400">
@@ -386,7 +396,7 @@ export const ReceiptScanner: React.FC<ReceiptScannerProps> = ({
                       type="text"
                       value={items}
                       onChange={(e) => setItems(e.target.value)}
-                      className="bg-black/40 border border-white/15 rounded-lg px-2.5 py-1 text-xs text-white font-bold text-right outline-none focus:border-emerald-500"
+                      className="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs text-slate-900 font-bold text-right outline-none focus:border-[#2b4d32]"
                     />
                   ) : (
                     <span className="text-xs font-bold text-slate-300">{items}</span>

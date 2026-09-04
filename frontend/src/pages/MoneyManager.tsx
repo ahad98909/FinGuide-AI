@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { api } from '../services/api';
-import { Transaction } from '../types';
+import { Transaction, TransactionSummary } from '../types';
 import {
   DollarSign,
   TrendingUp,
@@ -27,6 +27,13 @@ export const MoneyManager: React.FC<{
 }> = ({ refreshCounter, onRefreshData }) => {
   const { t } = useLanguage();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [summary, setSummary] = useState<TransactionSummary>({
+    total_income: 0,
+    total_expenses: 0,
+    balance: 0,
+    income_count: 0,
+    expense_count: 0
+  });
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
@@ -46,9 +53,38 @@ export const MoneyManager: React.FC<{
     try {
       setLoading(true);
       const res = await api.getTransactions();
-      setTransactions(res);
+      
+      const txList: Transaction[] = Array.isArray(res)
+        ? res
+        : (res?.transactions || []);
+
+      const calcIncome = txList
+        .filter((t) => t.type?.toLowerCase() === 'income')
+        .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+      const calcExpenses = txList
+        .filter((t) => t.type?.toLowerCase() === 'expense')
+        .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+      const incomeCount = txList.filter((t) => t.type?.toLowerCase() === 'income').length;
+      const expenseCount = txList.filter((t) => t.type?.toLowerCase() === 'expense').length;
+
+      const summaryData: TransactionSummary = res?.summary ? {
+        total_income: Number(res.summary.total_income ?? calcIncome),
+        total_expenses: Number(res.summary.total_expenses ?? calcExpenses),
+        balance: Number(res.summary.balance ?? (calcIncome - calcExpenses)),
+        income_count: Number(res.summary.income_count ?? incomeCount),
+        expense_count: Number(res.summary.expense_count ?? expenseCount),
+      } : {
+        total_income: calcIncome,
+        total_expenses: calcExpenses,
+        balance: calcIncome - calcExpenses,
+        income_count: incomeCount,
+        expense_count: expenseCount,
+      };
+
+      setTransactions(txList);
+      setSummary(summaryData);
     } catch (e) {
-      console.error(e);
+      console.error('Error fetching transactions:', e);
     } finally {
       setLoading(false);
     }
@@ -57,17 +93,6 @@ export const MoneyManager: React.FC<{
   useEffect(() => {
     loadTransactions();
   }, [refreshCounter]);
-
-  // Compute live summary statistics
-  const totalIncome = transactions
-    .filter((t) => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalExpenses = transactions
-    .filter((t) => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const remainingBalance = totalIncome - totalExpenses;
 
   const handleAddTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,7 +109,7 @@ export const MoneyManager: React.FC<{
       // Reset form
       setAmount('');
       setDescription('');
-      loadTransactions();
+      await loadTransactions();
       onRefreshData();
     } catch (e) {
       alert('Failed to log transaction');
@@ -95,7 +120,7 @@ export const MoneyManager: React.FC<{
     if (!confirm('Are you sure you want to delete this transaction record?')) return;
     try {
       await api.deleteTransaction(id);
-      loadTransactions();
+      await loadTransactions();
       onRefreshData();
     } catch (e) {
       alert('Failed to delete transaction');
@@ -153,7 +178,7 @@ export const MoneyManager: React.FC<{
                 Total Income
               </span>
               <span className="text-2xl font-black text-white block mt-2 tracking-tight">
-                PKR {totalIncome.toLocaleString()}
+                PKR {summary.total_income.toLocaleString()}
               </span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-950/40 group-hover:scale-105 transition-transform">
@@ -162,7 +187,7 @@ export const MoneyManager: React.FC<{
           </div>
           <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
             <span className="text-[10px] text-emerald-300 font-bold bg-emerald-500/15 border border-emerald-500/25 px-2.5 py-0.8 rounded-full inline-flex items-center gap-1">
-              <ArrowDownRight className="w-3 h-3" /> {transactions.filter((t) => t.type === 'income').length} Income Entries
+              <ArrowDownRight className="w-3 h-3" /> {summary.income_count} Income Entries
             </span>
           </div>
         </div>
@@ -175,7 +200,7 @@ export const MoneyManager: React.FC<{
                 Total Expenses
               </span>
               <span className="text-2xl font-black text-white block mt-2 tracking-tight">
-                PKR {totalExpenses.toLocaleString()}
+                PKR {summary.total_expenses.toLocaleString()}
               </span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shadow-lg shadow-rose-950/40 group-hover:scale-105 transition-transform">
@@ -184,7 +209,7 @@ export const MoneyManager: React.FC<{
           </div>
           <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
             <span className="text-[10px] text-rose-300 font-bold bg-rose-500/15 border border-rose-500/25 px-2.5 py-0.8 rounded-full inline-flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3" /> {transactions.filter((t) => t.type === 'expense').length} Expense Entries
+              <ArrowUpRight className="w-3 h-3" /> {summary.expense_count} Expense Entries
             </span>
           </div>
         </div>
@@ -197,9 +222,9 @@ export const MoneyManager: React.FC<{
                 Remaining Balance
               </span>
               <span className={`text-2xl font-black block mt-2 tracking-tight ${
-                remainingBalance >= 0 ? 'text-white' : 'text-rose-400'
+                summary.balance >= 0 ? 'text-white' : 'text-rose-400'
               }`}>
-                PKR {remainingBalance.toLocaleString()}
+                PKR {summary.balance.toLocaleString()}
               </span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-lg shadow-cyan-950/40 group-hover:scale-105 transition-transform">
@@ -282,7 +307,7 @@ export const MoneyManager: React.FC<{
                     <td className="py-3.5 px-4 font-medium uppercase">
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          tx.type === 'income'
+                          tx.type?.toLowerCase() === 'income'
                             ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25'
                             : 'bg-rose-500/15 text-rose-300 border border-rose-500/25'
                         }`}
@@ -295,9 +320,9 @@ export const MoneyManager: React.FC<{
                       {tx.description || '-'}
                     </td>
                     <td className={`py-3.5 px-4 text-right font-black ${
-                      tx.type === 'income' ? 'text-emerald-400' : 'text-rose-400'
+                      tx.type?.toLowerCase() === 'income' ? 'text-emerald-400' : 'text-rose-400'
                     }`}>
-                      {tx.type === 'income' ? '+' : '-'}PKR {tx.amount.toLocaleString()}
+                      {tx.type?.toLowerCase() === 'income' ? '+' : '-'}PKR {tx.amount.toLocaleString()}
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <button
@@ -404,7 +429,7 @@ export const MoneyManager: React.FC<{
                   placeholder="2,500"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="w-full bg-black/40 border border-white/15 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-xs outline-none text-white placeholder-slate-400 transition-all font-semibold"
+                  className="w-full bg-white border border-slate-300 focus:border-[#2b4d32] focus:ring-4 focus:ring-[#2b4d32]/10 rounded-xl px-4 py-2.5 text-xs outline-none text-slate-900 placeholder:text-slate-400 transition-all font-semibold"
                 />
               </div>
 
@@ -415,7 +440,7 @@ export const MoneyManager: React.FC<{
                   placeholder="Uber ride to office"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-black/40 border border-white/15 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-xs outline-none text-white placeholder-slate-400 transition-all font-semibold"
+                  className="w-full bg-white border border-slate-300 focus:border-[#2b4d32] focus:ring-4 focus:ring-[#2b4d32]/10 rounded-xl px-4 py-2.5 text-xs outline-none text-slate-900 placeholder:text-slate-400 transition-all font-semibold"
                 />
               </div>
 
@@ -426,7 +451,7 @@ export const MoneyManager: React.FC<{
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full bg-black/40 border border-white/15 focus:border-emerald-500 rounded-xl px-4 py-2.5 text-xs outline-none text-white transition-all font-semibold"
+                  className="w-full bg-white border border-slate-300 focus:border-[#2b4d32] focus:ring-4 focus:ring-[#2b4d32]/10 rounded-xl px-4 py-2.5 text-xs outline-none text-slate-900 transition-all font-semibold cursor-pointer"
                 />
               </div>
 

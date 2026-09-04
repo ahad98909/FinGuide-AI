@@ -203,7 +203,7 @@ export const Settings: React.FC<SettingsProps> = ({ onRefreshData }) => {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[#112316] text-white font-extrabold border-2 border-[#2b4d32] focus:border-emerald-500 focus:ring-4 focus:ring-[#2b4d32]/20 rounded-xl px-4 py-2.5 text-xs outline-none transition-all placeholder-slate-400"
+                className="w-full bg-white text-slate-900 font-bold border-2 border-slate-300 focus:border-[#2b4d32] focus:ring-4 focus:ring-[#2b4d32]/20 rounded-xl px-4 py-2.5 text-xs outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -265,7 +265,7 @@ export const Settings: React.FC<SettingsProps> = ({ onRefreshData }) => {
                 required
                 value={income}
                 onChange={(e) => setIncome(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full bg-[#112316] text-white font-extrabold border-2 border-[#2b4d32] focus:border-emerald-500 focus:ring-4 focus:ring-[#2b4d32]/20 rounded-xl px-4 py-2.5 text-xs outline-none transition-all placeholder-slate-400"
+                className="w-full bg-white text-slate-900 font-bold border-2 border-slate-300 focus:border-[#2b4d32] focus:ring-4 focus:ring-[#2b4d32]/20 rounded-xl px-4 py-2.5 text-xs outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -278,7 +278,7 @@ export const Settings: React.FC<SettingsProps> = ({ onRefreshData }) => {
                 required
                 value={expenses}
                 onChange={(e) => setExpenses(e.target.value === '' ? '' : Number(e.target.value))}
-                className="w-full bg-[#112316] text-white font-extrabold border-2 border-[#2b4d32] focus:border-emerald-500 focus:ring-4 focus:ring-[#2b4d32]/20 rounded-xl px-4 py-2.5 text-xs outline-none transition-all placeholder-slate-400"
+                className="w-full bg-white text-slate-900 font-bold border-2 border-slate-300 focus:border-[#2b4d32] focus:ring-4 focus:ring-[#2b4d32]/20 rounded-xl px-4 py-2.5 text-xs outline-none transition-all placeholder:text-slate-400"
               />
             </div>
           </div>

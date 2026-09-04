@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List, Dict, Any
 from ..database import get_db
 from ..models import User, FinancialProfile, Transaction, Goal, PriceTracking
@@ -22,9 +23,29 @@ def get_dashboard(current_user: User = Depends(get_current_user), db: Session = 
         db.add(profile)
         db.commit()
 
-    income = profile.monthly_income
-    expenses = profile.monthly_expenses
+    # Sum up income and expenses from transactions for precision
+    income_tx_sum = db.query(func.sum(Transaction.amount)).filter(
+        Transaction.user_id == current_user.id,
+        func.lower(Transaction.type) == 'income'
+    ).scalar()
+
+    expense_tx_sum = db.query(func.sum(Transaction.amount)).filter(
+        Transaction.user_id == current_user.id,
+        func.lower(Transaction.type) == 'expense'
+    ).scalar()
+
+    if income_tx_sum is not None and income_tx_sum > 0:
+        income = float(income_tx_sum)
+    else:
+        income = float(profile.monthly_income or 0.0)
+
+    if expense_tx_sum is not None and expense_tx_sum > 0:
+        expenses = float(expense_tx_sum)
+    else:
+        expenses = float(profile.monthly_expenses or 0.0)
+
     savings = max(income - expenses, 0.0)
+
 
     # Fetch active goals
     goals = db.query(Goal).filter(Goal.user_id == current_user.id, Goal.status == "active").all()
@@ -46,7 +67,7 @@ def get_dashboard(current_user: User = Depends(get_current_user), db: Session = 
     
     # Sum up expenses in current month
     for tx in transactions:
-        if tx.type == "expense" and tx.category in expense_by_category:
+        if tx.type and tx.type.lower() == "expense" and tx.category in expense_by_category:
             expense_by_category[tx.category] += tx.amount
 
     # 2. Financial Health Score Logic (0-100)

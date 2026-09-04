@@ -113,6 +113,22 @@ def onboarding(data: OnboardingData, current_user: User = Depends(get_current_us
     profile.monthly_income = data.monthly_income
     profile.current_savings = data.current_savings
     profile.monthly_expenses = data.monthly_expenses
+
+    if data.monthly_income > 0:
+        income_tx = db.query(Transaction).filter(
+            Transaction.user_id == current_user.id,
+            Transaction.type == 'income'
+        ).first()
+        if not income_tx:
+            init_tx = Transaction(
+                user_id=current_user.id,
+                type="income",
+                category="Salary",
+                amount=data.monthly_income,
+                description="Monthly Income / Salary",
+                date=datetime.utcnow().strftime("%Y-%m-%d")
+            )
+            db.add(init_tx)
     
     db.commit()
     return {"status": "success", "message": "Onboarding complete"}

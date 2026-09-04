@@ -2,144 +2,181 @@
 
 > **Your Personal Multilingual Financial Co-Pilot**
 > 
-> *A simple, easy-to-use AI-powered financial assistant focused on financial inclusion.*
+> *A simple, intuitive, AI-powered financial companion built for financial literacy and inclusion.*
 
 ---
 
 ## 🌟 Overview
 
-FinGuide AI is a hackathon-ready financial inclusion platform built to bridge the financial literacy gap. By supporting major local languages and providing simple interfaces, FinGuide AI helps students, workers, and families manage their money, track savings, simulate what-if scenarios, detect financial scams, and learn core banking concepts.
+FinGuide AI is a financial inclusion platform designed to bridge the financial literacy gap across Pakistan and underserved communities. By supporting 8 regional and national languages with full right-to-left (RTL) localization and accessible conversational interfaces, FinGuide AI empowers users to understand their money, manage budgets, track savings goals, scan receipts, and stay protected from digital fraud.
 
-### Key Capabilities
+### 🌐 Complete Multilingual Support (8 Languages)
 
-1. **Multilingual Interface**: Support for English, Urdu (اردو), Roman Urdu, Punjabi (ਪੰਜਾਬੀ), Sindhi (سنڌي), Pashto (پښتو), Balochi (بلوچی), and Saraiki (سرائیکی).
-2. **AI Financial Assistant**: Conversational co-pilot that extracts goals and intent dynamically from text or voice, falling back to a **Mock AI Engine** if API keys are not supplied.
-3. **Smart Savings Goals & Price Tracking**: Recalculates saving targets and dates automatically. If a tracked product price hikes, it triggers visual alerts and options to realign your budget.
-4. **Interactive What-If Simulator**: Slide savings rates or product markups to observe timelines shift.
-5. **Heuristics Scam Detector**: Audits message texts for risk levels and details protective checklists.
-6. **Financial Academy & Quizzes**: Simplified decks covering compound interest, inflation, etc., backed by interactive quizzes.
+FinGuide AI provides native script and dynamic translation across every page:
+
+| Code | Language | Native Script | Layout Direction |
+| :--- | :--- | :--- | :--- |
+| `en` | **English** | English | LTR |
+| `ur` | **Urdu** | اردو | RTL |
+| `roman_urdu` | **Roman Urdu** | Roman Urdu | LTR |
+| `pa` | **Punjabi** | پنجابی / ਪੰਜਾਬੀ | RTL / LTR |
+| `sd` | **Sindhi** | سنڌي | RTL |
+| `ps` | **Pashto** | پښتو | RTL |
+| `bal` | **Balochi** | بلوچی | RTL |
+| `skr` | **Saraiki** | سرائیکی | RTL |
+
+- **Instant Language Switching**: Switch languages on the fly from the Landing Page, Login Screen, Registration Flow, or Dashboard Header/Sidebar.
+- **RTL & Typography**: Automatic `dir="rtl"` layout flipping with curated Nastaliq typography (`Noto Nastaliq Urdu`, `Jameel Noori Nastaleeq`) for Arabic-script languages.
+- **Persistent Preferences**: User language selection persists across sessions in `localStorage` and syncs with user profile settings.
 
 ---
 
-## 🏗️ Architecture
+### 🔑 Key Features
+
+1. **AI Financial Co-Pilot**:
+   - Conversational assistant supporting natural language queries in Urdu, Roman Urdu, English, Punjabi, etc.
+   - Extracts financial goals, expense intents, and budget questions automatically.
+   - Fallback to an offline **Mock AI Engine** when external API keys are unavailable.
+
+2. **Money Manager & Expense Tracking**:
+   - Comprehensive income and expense transaction logger with custom categorizations.
+   - Live aggregated summary cards: **Total Income**, **Total Expenses**, and **Net Balance**.
+   - Filter by date, category, or transaction type.
+
+3. **Receipt Scanner**:
+   - Optical and simulated receipt parsing that extracts amounts, dates, and vendor details into instant transaction entries.
+
+4. **Smart Savings Goals & Market Price Tracking**:
+   - Goal tracking with automated price hike simulations (e.g. inflation adjustments on vehicles or electronics).
+   - Dynamic recalculation of target completion dates and guided recommendations to adjust monthly contributions.
+
+5. **Heuristic Scam Detector**:
+   - Risk assessment engine for SMS, WhatsApp messages, or emails claiming prizes or lottery winnings.
+   - Generates risk scores (0–100) and actionable safety tips.
+
+6. **Reports & Analytics**:
+   - Visual spending breakdowns with interactive charts powered by Recharts.
+
+---
+
+## 🏗️ System Architecture
 
 ```mermaid
 graph TD
-    User([User Browser / Mobile]) -->|Vite Dev / Port 5173| FE[React TS Frontend]
-    FE -->|HTTP / JSON / CORS| BE[FastAPI Python Backend / Port 8000]
+    User([User Browser / Mobile]) -->|Vite Client / Port 5173| FE[React TS Frontend]
+    FE -->|REST API / JSON / CORS| BE[FastAPI Python Backend / Port 8000]
     BE -->|SQLAlchemy ORM| DB[(SQLite Database finguide.db)]
-    BE -->|LLM API / regex| AI[Gemini / OpenAI Services]
+    BE -->|LLM API / Regex Engine| AI[Gemini / OpenAI Services / Mock Fallback]
 ```
 
-- **Frontend**: React (TypeScript), Vite, Tailwind CSS v4, Recharts, Lucide Icons.
-- **Backend**: Python 3.10, FastAPI, SQLAlchemy ORM, SQLite database.
-- **AI Integrations**: Google Gemini API / OpenAI GPT-4o-mini (with automated Mock AI Fallback).
-- **Deployment**: Multi-container Docker Compose.
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Lucide React, Recharts.
+- **Backend**: Python 3.10+, FastAPI, SQLAlchemy ORM, SQLite, Pydantic.
+- **AI Integrations**: Google Gemini API & OpenAI GPT-4o-mini (with automated mock fallback).
+- **Styling & RTL**: Tailored CSS design system with CSS custom properties and RTL rules.
 
 ---
 
-## 🚀 Installation & Setup
+## 🚀 Getting Started
 
-### Option 1: Running with Docker Compose (Recommended)
-
-1. Ensure **Docker** and **Docker Compose** are installed and running.
-2. Build and launch all services:
-   ```bash
-   docker-compose up --build
-   ```
-3. Open `http://localhost:5173` in your browser. The backend API is available at `http://localhost:8000`.
-
-### Option 2: Local Manual Setup
-
-#### Backend Setup
-1. Navigate to the backend folder:
-   ```bash
-   cd backend
-   ```
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   # On Windows:
-   .\venv\Scripts\activate
-   # On macOS/Linux:
-   source venv/bin/activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Start the FastAPI development server:
-   ```bash
-   uvicorn app.main:app --reload --port 8000
-   ```
-
-#### Frontend Setup
-1. Navigate to the frontend folder:
-   ```bash
-   cd ../frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Vite server:
-   ```bash
-   npm run dev
-   ```
-4. Open the displayed URL (typically `http://localhost:5173`).
+### Prerequisites
+- **Python 3.10+**
+- **Node.js 18+** & **npm**
+- *(Optional)* **Docker** & **Docker Compose**
 
 ---
 
-## ⚙️ Environment Variables
+### Option 1: Running Locally (Recommended for Development)
 
-Copy the `.env.example` file to `.env` in the root:
+#### 1. Start the Backend Server
+```bash
+# Navigate to backend directory
+cd backend
+
+# Create and activate virtual environment
+# Windows:
+python -m venv venv
+.\venv\Scripts\activate
+
+# macOS / Linux:
+python3 -m venv venv
+source venv/bin/activate
+
+# Install requirements
+pip install -r requirements.txt
+
+# Start FastAPI development server
+python -m uvicorn app.main:app --reload --port 8000
+```
+> The API will be available at: `http://localhost:8000`  
+> Interactive Swagger Documentation: `http://localhost:8000/docs`
+
+#### 2. Start the Frontend Server
+Open a new terminal tab/window:
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install npm dependencies
+npm install
+
+# Run Vite dev server
+npm run dev
+```
+> The application will be running at: `http://localhost:5173`
+
+---
+
+### Option 2: Running with Docker Compose
+
+```bash
+docker-compose up --build
+```
+Open `http://localhost:5173` in your browser.
+
+---
+
+## ⚙️ Configuration & Environment Variables
+
+Create a `.env` file in the root directory if you want to use live LLM APIs:
 ```env
-GEMINI_API_KEY=your_gemini_key_here
-OPENAI_API_KEY=your_openai_key_here
+# Optional - if omitted, FinGuide runs in Mock AI mode seamlessly
+GEMINI_API_KEY=your_gemini_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
-*Note: If no API key is specified, the application automatically runs in **Mock AI Mode** with preset responses for common hackathon prompts. The demo will work perfectly out of the box!*
 
 ---
 
-## 🎪 Hackathon Demo Flow (10 Steps)
+## 🎪 Quick Walkthrough & Demo Guide
 
-Follow this exact flow to demo the prototype:
+1. **Landing Page**:
+   - Open `http://localhost:5173`.
+   - Test the **Language Dropdown** in the navbar or circular selector. Switch between English, Urdu, Roman Urdu, Punjabi, Sindhi, Pashto, Balochi, or Saraiki and observe instant full-page translation and RTL adaptation.
+   - Click **"Try Demo"** to log into the pre-populated demo account.
 
-1. **Step 1: Open Landing Page**
-   - Navigate to `http://localhost:5173`.
-   - Click the prominent **"Try Demo"** button. This automatically logs you in as "Ali", pre-populates transactions, and sets up active goals.
-2. **Step 2: Inspect Dashboard**
-   - Confirm your **Financial Health score (78/100)** displays. Click **"Why?"** to read good/bad indicators.
-   - Review your stats (PKR 100k Income, PKR 65k Expenses, PKR 35k Savings) and the category pie chart.
-3. **Step 3: Talk to the AI Assistant**
-   - Click **AI Assistant** in the sidebar.
-   - Select or type: `"I want to buy a bike."`
-   - The AI identifies the goal, extracts values, and presents an interactive **"Confirm & Create Goal"** action card.
-4. **Step 4: Create a Savings Goal**
-   - Click **"Confirm & Create Goal"** inside the chat bubble. It logs the goal and updates your active targets.
-5. **Step 5: Go to Goals Page**
-   - Click **Goals** in the sidebar.
-   - You will see the **Honda CD 70** goal (Target: PKR 185k, Saved: PKR 80k, Progress: 43%, Estimated: April 2027).
-6. **Step 6: Price Hikes Simulation**
-   - On the right **Price Tracker** widget, click **"Simulate Price Change"** on Honda CD 70.
-   - The price updates: `PKR 185,000 → PKR 200,000`.
-7. **Step 7: Goal Adjustment Notification**
-   - Look at the goal card. An alert warning appears: *"⚠️ Your goal price increased by PKR 15,000. New target: PKR 200,000. Estimated completion: May 2027."*
-   - Test the options panel. Click **"Option 1"** (Raise monthly savings by PKR 2,500). Your savings rate updates, bringing the target date back.
-8. **Step 8: Simulate What-If Timelines**
-   - Click **Simulator** in the sidebar.
-   - Drag the monthly savings slider from `15,000` to `20,000`.
-   - Confirm the result card displays: *"You can reach your goal 4 months earlier!"*
-9. **Step 9: Test Scam Detector**
-   - Click **Scam Detector** in the sidebar.
-   - Paste: `"Congratulations! You won PKR 500,000. Send PKR 2,000 processing fee to claim."`
-   - Click **Check message** to see a **HIGH RISK (94/100)** score and safety checklists.
-10. **Step 10: Multilingual Mode**
-    - Go to **Settings** and change Language to **Urdu** or **Roman Urdu**.
-    - Navigate back to **AI Assistant** and type: `"Mujhe batao main apna goal jaldi kaise pura kar sakta hoon?"` (or speech-to-text input via the microphone button).
-    - FinGuide AI automatically detects the input language and answers in Urdu/Roman Urdu.
+2. **Dashboard**:
+   - Inspect financial overview metrics, recent transactions, and category spending charts.
+   - Check the Financial Health Score and indicator explanations.
+
+3. **Money Manager**:
+   - View accurate **Total Income**, **Total Expenses**, and **Net Balance**.
+   - Add new income or expense items and verify immediate balance recalculations.
+
+4. **AI Assistant**:
+   - Ask financial questions in English, Urdu, or Roman Urdu (`"Mujhe budget banane mein madad chahiye"`).
+   - Type `"I want to save for a laptop"` to see automated goal extraction.
+
+5. **Price Hike Simulation (Goals Page)**:
+   - Go to **Goals** and click **"Simulate Price Change"** on an active goal to watch the dynamic recalculation and adjustment banner appear.
+
+6. **Scam Detector**:
+   - Paste suspicious messages into the detector to receive instant risk ratings and protective checklists.
 
 ---
 
 ## 🛡️ Educational Disclaimer
-FinGuide AI is built as an educational prototyping platform. It does not store real bank accounts or act as a registered financial advisor.
+FinGuide AI is developed as an educational and financial literacy platform. It does not provide certified financial advice or store sensitive banking credentials.
+
+---
+
+## 📄 License
+Built for financial inclusion and digital accessibility. © 2026 FinGuide AI. All rights reserved.

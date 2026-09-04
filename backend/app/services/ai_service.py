@@ -12,6 +12,10 @@ from ..schemas import (
     AIWhatIfResponse, AIWhatIfRequest,
     ReceiptScanResponse, ReceiptScanRequest
 )
+from ..integrations.mock_ai import MockAI
+from ..integrations.gemini import GeminiIntegration
+from ..integrations.openai import OpenAIIntegration
+from ..integrations.receipt_scanner import ReceiptScanner
 
 # Detect Language Helper
 def detect_language(text: str) -> str:
@@ -37,133 +41,49 @@ def detect_language(text: str) -> str:
 class AIService:
     @staticmethod
     def get_openai_client():
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            return None
-        try:
-            from openai import OpenAI
-            return OpenAI(api_key=api_key)
-        except Exception:
-            return None
+        return OpenAIIntegration.get_client()
 
     @staticmethod
     def get_gemini_client():
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            return None
-        try:
-            import google.generativeai as genai
-            genai.configure(api_key=api_key)
-            return genai
-        except Exception:
-            return None
+        return GeminiIntegration.get_client()
 
     @classmethod
-    def chat(cls, message: str, user_profile: Dict[str, Any], active_goals: List[Dict[str, Any]] = None) -> AIChatResponse:
-        detected_lang = detect_language(message)
-        profile_lang = user_profile.get("language", "en")
-        response_lang = detected_lang if detected_lang != "en" else profile_lang
-        if response_lang not in ["en", "ur", "roman_urdu"]:
-            response_lang = "en"
-
-        # Check API configuration
-        openai_client = cls.get_openai_client()
-        gemini_client = cls.get_gemini_client()
+    def chat(
+        cls,
+        message: str,
+        user_profile: Dict[str, Any],
+        active_goals: List[Dict[str, Any]] = None,
+        language: Optional[str] = None,
+        session_id: Optional[int] = None
+    ) -> AIChatResponse:
+        # Priority 1: Explicit language parameter passed from frontend LanguageContext
+        # Priority 2: User profile language
+        # Priority 3: Fallback based on message detection
+        selected_lang = language or user_profile.get("language")
+        valid_langs = ["en", "ur", "roman_urdu", "pa", "sd", "ps", "bal", "skr"]
         
-        # 1. Live AI engine if API key configured
-        if gemini_client or openai_client:
-            try:
-                lang_prompt_instruction = {
-                    "en": "Respond in clear, professional, and friendly English.",
-                    "ur": "براہ کرم خالص اور معیاری اردو رسم الخط میں دوستانہ اور جامع جواب دیں۔",
-                    "roman_urdu": "Jawab aasan Roman Urdu (English alphabet me Urdu) me dein, friendly aur helpful andaz me."
-                }.get(response_lang, "Respond in English.")
+        if not selected_lang or selected_lang not in valid_langs:
+            detected = detect_language(message)
+            selected_lang = detected if detected in ["ur", "roman_urdu"] else "en"
 
-                prompt = f"""
-You are FinGuide AI, an elite, friendly, and expert financial co-pilot assistant for Pakistan and emerging market users.
-User Profile:
-- Name: {user_profile.get('name', 'User')}
-- Monthly Income: PKR {user_profile.get('monthly_income', 0):,}
-- Current Savings: PKR {user_profile.get('current_savings', 0):,}
-- Monthly Expenses: PKR {user_profile.get('monthly_expenses', 0):,}
-- Profile Type: {user_profile.get('user_type', 'general')}
-- Active Goals: {json.dumps(active_goals or [])}
-- Response Language Requirement: {lang_prompt_instruction}
+        response_lang = selected_lang
 
-Answer the user's specific question thoroughly with realistic numbers, bullet points, and actionable Pakistani market advice (e.g. Meezan Bank, Mutual Funds, PSX, Gold, JazzCash/Easypaisa, 50/30/20 budget).
+        # 1. Try Live Gemini if configured
+        gemini_res = GeminiIntegration.chat(message, response_lang, user_profile, active_goals)
+        if gemini_res:
+            gemini_res.session_id = session_id
+            return gemini_res
 
-Classify the user intent into one of:
-- CREATE_GOAL (If user wants to save for/buy something: bike, car, laptop, phone, wedding, house)
-- WHAT_IF (If asking how increasing savings changes their timeline)
-- ANALYZE_EXPENSES (If asking about cutting spending or analyzing bills)
-- CREATE_BUDGET (If asking how to budget, plan salary, or divide income)
-- EXPLAIN_FINANCE (If asking to explain a financial term or investment vehicle)
-- SCAM_ANALYSIS (If asking about SMS, call, prize, or suspicious transaction)
-- GENERAL_FINANCIAL_QUESTION (Any general advice, chit-chat, or question)
+        # 2. Try Live OpenAI if configured
+        openai_res = OpenAIIntegration.chat(message, response_lang, user_profile, active_goals)
+        if openai_res:
+            openai_res.session_id = session_id
+            return openai_res
 
-If intent is CREATE_GOAL, extract: name, target_amount, current_amount, monthly_contribution.
-
-Respond ONLY with a valid JSON object matching this structure:
-{{
-    "intent": "INTENT_NAME",
-    "response": "Detailed, highly helpful, and complete answer in the requested language",
-    "action": {{
-        "type": "CREATE_GOAL",
-        "data": {{
-            "name": "Goal Title",
-            "target_amount": 185000,
-            "current_amount": 50000,
-            "monthly_contribution": 15000
-        }}
-    }}
-}}
-(If no action is needed, set action to null).
-
-User query: "{message}"
-"""
-                if gemini_client:
-                    for model_name in ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-pro']:
-                        try:
-                            model = gemini_client.GenerativeModel(model_name)
-                            res = model.generate_content(prompt)
-                            res_text = res.text
-                            match = re.search(r'\{.*\}', res_text, re.DOTALL)
-                            if match:
-                                data = json.loads(match.group(0))
-                                return AIChatResponse(
-                                    intent=data.get("intent", "GENERAL_FINANCIAL_QUESTION"),
-                                    response=data.get("response", "How can I assist your financial journey today?"),
-                                    action=AIChatAction(
-                                        type=data.get("action", {}).get("type", "NONE"),
-                                        data=data.get("action", {}).get("data")
-                                    ) if data.get("action") else None
-                                )
-                        except Exception:
-                            continue
-
-                elif openai_client:
-                    chat_completion = openai_client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=[{"role": "user", "content": prompt}],
-                        response_format={"type": "json_object"}
-                    )
-                    res_text = chat_completion.choices[0].message.content
-                    match = re.search(r'\{.*\}', res_text, re.DOTALL)
-                    if match:
-                        data = json.loads(match.group(0))
-                        return AIChatResponse(
-                            intent=data.get("intent", "GENERAL_FINANCIAL_QUESTION"),
-                            response=data.get("response", "How can I assist your financial journey today?"),
-                            action=AIChatAction(
-                                type=data.get("action", {}).get("type", "NONE"),
-                                data=data.get("action", {}).get("data")
-                            ) if data.get("action") else None
-                        )
-            except Exception as e:
-                print(f"Live AI encountered an issue: {e}. Utilizing smart offline reasoning engine.")
-
-        # 2. Dynamic Financial Reasoning Engine (Instant, robust, and answers any query)
-        return cls._smart_chat(message, response_lang, user_profile, active_goals)
+        # 3. Dynamic Mock AI Reasoning Engine supporting all 8 official languages
+        mock_res = MockAI.generate_chat_response(message, response_lang, user_profile, active_goals)
+        mock_res.session_id = session_id
+        return mock_res
 
     @classmethod
     def _smart_chat(cls, message: str, lang: str, user_profile: Dict[str, Any], active_goals: List[Dict[str, Any]] = None) -> AIChatResponse:
@@ -488,7 +408,7 @@ Aap ke sawaal *" {msg} "* ke mutabiq best actionable steps:
 1. **Immediate Action:** Apne monthly expenses (PKR {expenses:,.0f}) ka daily record rakhein taake cash leakage band ho sake.
 2. **Smart Savings Plan:** Har mahine apni aamdani ka 20% (PKR {income * 0.20:,.0f}) pehle bachat me dalein.
 3. **Wealth Security:** Kam az kam PKR {expenses * 3:,.0f} ka Emergency Fund kisi high-yield ya Islamic Cash Fund me mehfooz karein.
-4. **Tools in FinGuide:** Is goal ko track karne ke liye hamare **Money Manager** aur **Simulator** tools ka bharpoor faida uthayein!
+4. **Tools in FinGuide:** Is goal ko track karne ke liye hamare **Money Manager** aur **Goals** tools ka bharpoor faida uthayein!
 
 Aap mazeed kisi specific budget ya target ke baare me sawaal pooch sakte hain!"""
         else:
@@ -499,7 +419,7 @@ Regarding your inquiry *" {msg} "*:
 1. **Strategic Assessment:** Maintain strict discipline over your current monthly spending (PKR {expenses:,.0f}) by auditing recurring daily outlays.
 2. **Targeted Savings:** Aim to set aside at least 20% of your income (PKR {income * 0.20:,.0f}/month) before allocating discretionary funds.
 3. **Emergency Cushion:** Secure an emergency reserve of at least PKR {expenses * 3:,.0f} (3 months of living costs) in a liquid Islamic money-market fund.
-4. **Action Steps in FinGuide:** Use the **Money Manager** to log expenses in real time and test alternative savings trajectories in the **Simulator**.
+4. **Action Steps in FinGuide:** Use the **Money Manager** to log expenses in real time and monitor savings milestones in **Goals**.
 
 Feel free to ask for specific calculations or milestone planning!"""
 
@@ -607,63 +527,32 @@ Feel free to ask for specific calculations or milestone planning!"""
 
     @staticmethod
     def scan_receipt(request: ReceiptScanRequest) -> ReceiptScanResponse:
-        today_str = datetime.date.today().isoformat()
-        text = (request.text or "").strip()
+        result = ReceiptScanner.scan(image_input=request.image_data, text_hint=request.text or "")
         
-        merchant = "Imtiaz Super Market"
-        amount = 3200.0
-        category = "Food"
-        items = "Groceries (12 items)"
-        date_str = today_str
-        confidence = 0.96
+        # Format items to string if list
+        raw_items = result.get('items', 'Purchased items')
+        if isinstance(raw_items, list):
+            item_strs = []
+            for item in raw_items:
+                if isinstance(item, dict) and 'name' in item:
+                    item_strs.append(item['name'])
+                elif isinstance(item, str):
+                    item_strs.append(item)
+            items_str = ", ".join(item_strs) if item_strs else "Purchased items"
+        else:
+            items_str = str(raw_items)
 
-        if text:
-            amount_match = re.search(r'(?:total|amount|pkr|rs\.?|sum|net)\s*[:=]?\s*([0-9,]+(?:\.[0-9]{1,2})?)', text, re.IGNORECASE)
-            if amount_match:
-                try:
-                    amount = float(amount_match.group(1).replace(',', ''))
-                except ValueError:
-                    pass
-
-            date_match = re.search(r'(\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/]\d{2,4})', text)
-            if date_match:
-                date_str = date_match.group(1)
-
-            text_lower = text.lower()
-            if any(w in text_lower for w in ['super market', 'mart', 'grocer', 'bakery', 'milk', 'bread', 'fruit', 'vegetable', 'meat', 'chicken', 'imtiaz', 'alfatah', 'carrefour', 'metro', 'savemart']):
-                category = "Food"
-                merchant = "Imtiaz Super Market" if "imtiaz" in text_lower else "Super Market"
-                items = "Groceries & Daily Essentials"
-            elif any(w in text_lower for w in ['restaurant', 'cafe', 'coffee', 'pizza', 'burger', 'kfc', 'mcdonald', 'kabab', 'biryani', 'tea', 'dhabba', 'foodpanda']):
-                category = "Food"
-                merchant = "Restaurant / Cafe"
-                items = "Food & Dining"
-            elif any(w in text_lower for w in ['fuel', 'petrol', 'diesel', 'pso', 'shell', 'total', 'byco', 'attock', 'careem', 'uber', 'indrive', 'yango', 'rickshaw', 'toll']):
-                category = "Transport"
-                merchant = "PSO / Fuel Station"
-                items = "Fuel Refill & Transport"
-            elif any(w in text_lower for w in ['electricity', 'k-electric', 'lesco', 'iesco', 'fesco', 'gepco', 'sui gas', 'sngpl', 'ssgc', 'ptcl', 'stormfiber', 'nayatel', 'jazz', 'telenor', 'zong', 'ufone', 'water', 'maintenance']):
-                category = "Bills"
-                merchant = "Utility Provider"
-                items = "Monthly Utility Bill"
-            elif any(w in text_lower for w in ['cloth', 'shoes', 'khaadi', 'sapphire', 'gul ahmed', 'junaid jamshed', 'outfitters', 'daraz', 'shopping', 'mall', 'electronics']):
-                category = "Shopping"
-                merchant = "Shopping Outlet"
-                items = "Apparel & Shopping"
-            elif any(w in text_lower for w in ['hospital', 'clinic', 'pharmacy', 'medicine', 'dr', 'doctor', 'fazal din', 'd-watson', 'servaid', 'lab', 'chughtai', 'aga khan']):
-                category = "Healthcare"
-                merchant = "Pharmacy / Healthcare"
-                items = "Medications & Medical Care"
-            elif any(w in text_lower for w in ['school', 'college', 'university', 'fee', 'tuition', 'books', 'stationery', 'academy']):
-                category = "Education"
-                merchant = "Educational Institution"
-                items = "Tuition / Educational Books"
+        amount = float(result.get('total_amount') or result.get('amount') or 0.0)
 
         return ReceiptScanResponse(
-            merchant=merchant,
-            date=date_str,
+            merchant=result.get('merchant', 'K-Electric Limited'),
+            date=result.get('date', datetime.date.today().isoformat()),
             amount=amount,
-            category=category,
-            items=items,
-            confidence=confidence
+            total_amount=amount,
+            category=result.get('category', 'Bills'),
+            items=items_str,
+            confidence=float(result.get('confidence', 0.98)),
+            consumer_name=result.get('consumer_name'),
+            account_number=result.get('account_number')
         )
+

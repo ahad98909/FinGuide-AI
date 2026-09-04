@@ -14,13 +14,27 @@ export interface FinancialProfile {
 
 export interface Transaction {
   id: number;
-  user_id: number;
+  user_id?: number;
   type: 'income' | 'expense';
   category: string;
   amount: number;
-  description: string;
+  description?: string;
   date: string;
 }
+
+export interface TransactionSummary {
+  total_income: number;
+  total_expenses: number;
+  balance: number;
+  income_count: number;
+  expense_count: number;
+}
+
+export interface TransactionListResponse {
+  transactions: Transaction[];
+  summary: TransactionSummary;
+}
+
 
 export interface Goal {
   id: number;

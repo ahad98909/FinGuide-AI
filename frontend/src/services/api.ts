@@ -149,6 +149,23 @@ export const api = {
     return res.json();
   },
 
+  async createGoal(data: any) {
+    return this.addGoal(data);
+  },
+
+  async post(endpoint: string, data: any) {
+    const res = await authFetch(getUrl(endpoint), {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.detail || `POST ${endpoint} failed`);
+    }
+    return res.json();
+  },
+
   async updateGoal(id: number, data: any) {
     const res = await authFetch(getUrl(`/goals/${id}`), {
       method: 'PUT',
@@ -186,12 +203,46 @@ export const api = {
     return res.json();
   },
 
-  // AI Copilot Services
-  async chat(message: string) {
+  // AI Copilot Services & Chat History
+  async getChatHistory() {
+    const res = await authFetch(getUrl('/ai/history'), {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch chat history');
+    return res.json();
+  },
+
+  async getChatSession(sessionId: number) {
+    const res = await authFetch(getUrl(`/ai/history/${sessionId}`), {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch chat session');
+    return res.json();
+  },
+
+  async newChatSession(language: string = 'en') {
+    const res = await authFetch(getUrl(`/ai/new-session?language=${encodeURIComponent(language)}`), {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to create new chat session');
+    return res.json();
+  },
+
+  async deleteChatSession(sessionId: number) {
+    const res = await authFetch(getUrl(`/ai/history/${sessionId}`), {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to delete chat session');
+    return res.json();
+  },
+
+  async chat(message: string, language?: string, sessionId?: number) {
     const res = await authFetch(getUrl('/ai/chat'), {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, language, session_id: sessionId }),
     });
     if (!res.ok) throw new Error('AI Copilot request failed');
     return res.json();

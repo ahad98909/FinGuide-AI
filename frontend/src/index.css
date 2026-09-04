@@ -76,14 +76,155 @@ html {
   @apply bg-emerald-900/40 rounded-full hover:bg-emerald-800/60;
 }
 
-/* Global Select & Option visibility fix */
+/* ==========================================================================
+   GLOBAL INPUT, TEXTAREA & SELECT TEXT VISIBILITY FIX
+   Forces crisp dark text on white/light backgrounds across all browsers & iOS Safari
+   ========================================================================== */
+
+/* Universal styling for all text inputs, textareas, and selects */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="image"]),
+textarea,
 select {
-  color: #0f172a;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  background-color: #ffffff !important;
+  caret-color: #0f172a !important;
 }
+
+/* Explicit rules for all standard input types */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"] {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  background-color: #ffffff !important;
+  caret-color: #0f172a !important;
+}
+
+/* Gray visible placeholder across all browser engines */
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+/* Focus states ensure text and fill remain dark */
+input:focus,
+textarea:focus,
+select:focus {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0f172a !important;
+}
+
+/* Browser autofill styling fix (prevents browser from turning text white/yellow) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a !important;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+  color: #0f172a !important;
+}
+
+/* Disabled states */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  background-color: #f1f5f9 !important;
+  cursor: not-allowed;
+}
+
+/* Select dropdowns and options */
+select {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  background-color: #ffffff !important;
+}
+
 select option {
-  color: #000000 !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
   background-color: #ffffff !important;
   font-weight: 600;
   font-size: 13px;
   padding: 6px 10px;
 }
+
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .flex-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+[dir="rtl"] .pl-4 {
+  padding-left: 0;
+  padding-right: 1rem;
+}
+
+[dir="rtl"] .pr-4 {
+  padding-right: 0;
+  padding-left: 1rem;
+}
+
+/* Urdu & Arabic script font styling */
+[lang="ur"],
+[lang="pa"],
+[lang="sd"],
+[lang="ps"],
+[lang="bal"],
+[lang="skr"] {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', system-ui, sans-serif;
+}
+

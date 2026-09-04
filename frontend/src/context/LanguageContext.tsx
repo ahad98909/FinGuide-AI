@@ -8,7 +8,9 @@ import ps from '../locales/ps.json';
 import bal from '../locales/bal.json';
 import skr from '../locales/skr.json';
 
-type Language = 'en' | 'ur' | 'roman_urdu' | 'pa' | 'sd' | 'ps' | 'bal' | 'skr';
+export type Language = 'en' | 'ur' | 'roman_urdu' | 'pa' | 'sd' | 'ps' | 'bal' | 'skr';
+
+export const rtlLanguages: Language[] = ['ur', 'pa', 'sd', 'ps', 'bal', 'skr'];
 
 const translations: Record<Language, Record<string, string>> = {
   en,
@@ -25,6 +27,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string, replacements?: Record<string, string | number>) => string;
+  dir: 'ltr' | 'rtl';
   autoDetect: boolean;
   setAutoDetect: (auto: boolean) => void;
 }
@@ -34,13 +37,23 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem('language');
-    return (saved as Language) || 'en';
+    return (saved as Language) && translations[saved as Language] ? (saved as Language) : 'en';
   });
 
   const [autoDetect, setAutoDetectState] = useState<boolean>(() => {
     const saved = localStorage.getItem('auto_detect_language');
     return saved ? saved === 'true' : true;
   });
+
+  const dir: 'ltr' | 'rtl' = rtlLanguages.includes(language) ? 'rtl' : 'ltr';
+
+  useEffect(() => {
+    localStorage.setItem('language', language);
+    // Apply RTL/LTR direction
+    document.documentElement.dir = dir;
+    // Apply language to html tag
+    document.documentElement.lang = language;
+  }, [language, dir]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
@@ -70,7 +83,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, autoDetect, setAutoDetect }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, dir, autoDetect, setAutoDetect }}>
       {children}
     </LanguageContext.Provider>
   );

@@ -29,6 +29,11 @@ def get_goals(current_user: User = Depends(get_current_user), db: Session = Depe
 
 @router.post("", response_model=GoalOut)
 def create_goal(goal_data: GoalCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if goal_data.target_amount <= 0:
+        raise HTTPException(status_code=400, detail="Target amount must be greater than 0")
+    if goal_data.monthly_contribution <= 0:
+        raise HTTPException(status_code=400, detail="Monthly contribution must be greater than 0")
+
     # Calculate target date automatically if it's missing or standard
     target_date = goal_data.target_date
     if not target_date or target_date == "string" or target_date == "":

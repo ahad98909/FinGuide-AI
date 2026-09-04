@@ -49,7 +49,10 @@ export const Reports: React.FC<{ refreshCounter: number }> = ({ refreshCounter }
           api.getTransactions().catch(() => [])
         ]);
         if (dash) setDashboardData(dash);
-        if (txs) setTransactions(txs);
+        if (txs) {
+          const txList = Array.isArray(txs) ? txs : (txs?.transactions || []);
+          setTransactions(txList);
+        }
       } catch (e) {
         console.error(e);
       } finally {

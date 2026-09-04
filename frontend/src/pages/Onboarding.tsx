@@ -164,7 +164,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName 
                   placeholder="100,000"
                   value={income}
                   onChange={(e) => setIncome(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl px-4 py-3 text-xs outline-none transition-all placeholder-slate-400"
+                  className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl px-4 py-3 text-xs text-slate-900 font-semibold outline-none transition-all placeholder:text-slate-400"
                 />
               </div>
 
@@ -178,7 +178,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName 
                   placeholder="80,000"
                   value={savings}
                   onChange={(e) => setSavings(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl px-4 py-3 text-xs outline-none transition-all placeholder-slate-400"
+                  className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl px-4 py-3 text-xs text-slate-900 font-semibold outline-none transition-all placeholder:text-slate-400"
                 />
               </div>
 
@@ -192,7 +192,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName 
                   placeholder="65,000"
                   value={expenses}
                   onChange={(e) => setExpenses(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl px-4 py-3 text-xs outline-none transition-all placeholder-slate-400"
+                  className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl px-4 py-3 text-xs text-slate-900 font-semibold outline-none transition-all placeholder:text-slate-400"
                 />
               </div>
             </div>

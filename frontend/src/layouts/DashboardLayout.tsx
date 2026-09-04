@@ -7,9 +7,7 @@ import {
   MessageSquare,
   Target,
   DollarSign,
-  Sliders,
   ShieldAlert,
-  GraduationCap,
   Settings,
   Bell,
   Globe,
@@ -30,7 +28,7 @@ export const DashboardLayout: React.FC<{
   userName: string;
   refreshCounter: number;
 }> = ({ children, currentTab, setCurrentTab, onLogout, userName, refreshCounter }) => {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage, t, dir } = useLanguage();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -78,9 +76,7 @@ export const DashboardLayout: React.FC<{
     { id: 'money-manager', name: t('nav_money_manager'), icon: DollarSign },
     { id: 'reports', name: 'Reports & Analytics', icon: BarChart3 },
     { id: 'receipt-scanner', name: 'Receipt Scanner', icon: Camera },
-    { id: 'simulator', name: t('nav_simulator'), icon: Sliders },
     { id: 'scam-detector', name: t('nav_scam_detector'), icon: ShieldAlert },
-    { id: 'academy', name: t('nav_academy'), icon: GraduationCap },
     { id: 'settings', name: t('nav_settings'), icon: Settings },
   ];
 
@@ -97,6 +93,7 @@ export const DashboardLayout: React.FC<{
 
   return (
     <div 
+      dir={dir}
       className="min-h-screen flex bg-[#0c180e] text-white selection:bg-emerald-500/30 overflow-x-hidden font-sans bg-cover bg-center bg-fixed bg-no-repeat"
       style={{
         backgroundImage: "linear-gradient(to bottom, rgba(12, 24, 14, 0.78), rgba(10, 20, 12, 0.92)), url('/hero_background.jpg')"

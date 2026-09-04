@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models import User, FinancialProfile, Goal, Transaction
 from ..schemas import (
-    AIChatRequest, AIChatResponse, 
     AIScamRequest, AIScamResponse, 
     AIWhatIfRequest, AIWhatIfResponse,
     ReceiptScanRequest, ReceiptScanResponse
@@ -11,35 +10,7 @@ from ..schemas import (
 from ..services.ai_service import AIService
 from .auth import get_current_user
 
-router = APIRouter(prefix="/ai", tags=["AI Copilot"])
-
-@router.post("/chat", response_model=AIChatResponse)
-def ai_chat(req: AIChatRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    # Build user profile dict for AI context
-    profile = db.query(FinancialProfile).filter(FinancialProfile.user_id == current_user.id).first()
-    user_dict = {
-        "name": current_user.name,
-        "language": current_user.language,
-        "user_type": current_user.user_type,
-        "monthly_income": profile.monthly_income if profile else 0.0,
-        "current_savings": profile.current_savings if profile else 0.0,
-        "monthly_expenses": profile.monthly_expenses if profile else 0.0
-    }
-    
-    # Active goals context
-    db_goals = db.query(Goal).filter(Goal.user_id == current_user.id, Goal.status == "active").all()
-    goals_list = [
-        {
-            "id": g.id,
-            "name": g.name,
-            "target_amount": g.target_amount,
-            "current_amount": g.current_amount,
-            "monthly_contribution": g.monthly_contribution,
-            "target_date": g.target_date
-        } for g in db_goals
-    ]
-    
-    return AIService.chat(req.message, user_dict, goals_list)
+router = APIRouter(prefix="/ai", tags=["AI Copilot Tools"])
 
 @router.post("/analyze-expenses", response_model=dict)
 def analyze_expenses(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -47,7 +18,6 @@ def analyze_expenses(current_user: User = Depends(get_current_user), db: Session
     txs = db.query(Transaction).filter(Transaction.user_id == current_user.id).all()
     goals = db.query(Goal).filter(Goal.user_id == current_user.id, Goal.status == "active").all()
     
-    # Simple logic to connect spending with goals
     goal_name = goals[0].name if len(goals) > 0 else "your savings target"
     
     analysis = (
@@ -55,7 +25,6 @@ def analyze_expenses(current_user: User = Depends(get_current_user), db: Session
         f"Reducing shopping by PKR 3,000/month could help you reach your {goal_name} goal approximately 1 month earlier."
     )
     
-    # Support translation if user language is Urdu or Roman Urdu
     if current_user.language == "ur":
         analysis = (
             f"آپ نے شاپنگ پر اوسط سے 8,500 روپے زیادہ خرچ کیے۔ "
@@ -88,7 +57,6 @@ def what_if(req: AIWhatIfRequest, current_user: User = Depends(get_current_user)
         "current_savings": profile.current_savings
     }
     
-    # Fetch target goal
     goal = None
     if req.goal_id:
         goal = db.query(Goal).filter(Goal.id == req.goal_id, Goal.user_id == current_user.id).first()
@@ -96,7 +64,6 @@ def what_if(req: AIWhatIfRequest, current_user: User = Depends(get_current_user)
         goal = db.query(Goal).filter(Goal.user_id == current_user.id, Goal.status == "active").first()
         
     if not goal:
-        # Default mock goal values for simulation
         goal_dict = {
             "name": "Honda CD 70",
             "target_amount": 185000.0,
@@ -116,4 +83,3 @@ def what_if(req: AIWhatIfRequest, current_user: User = Depends(get_current_user)
 @router.post("/scan-receipt", response_model=ReceiptScanResponse)
 def scan_receipt(req: ReceiptScanRequest, current_user: User = Depends(get_current_user)):
     return AIService.scan_receipt(req)
-

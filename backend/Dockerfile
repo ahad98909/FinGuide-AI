@@ -4,9 +4,13 @@ FROM python:3.10-slim
 # Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies (e.g. gcc for passlib/bcrypt if needed)
+# Install system dependencies (build tools, tesseract-ocr, and OpenCV runtime libs)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    libgl1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container

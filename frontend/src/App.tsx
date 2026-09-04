@@ -8,9 +8,7 @@ import { Dashboard } from './pages/Dashboard';
 import { AIAssistant } from './pages/AIAssistant';
 import { Goals } from './pages/Goals';
 import { MoneyManager } from './pages/MoneyManager';
-import { Simulator } from './pages/Simulator';
 import { ScamDetector } from './pages/ScamDetector';
-import { Academy } from './pages/Academy';
 import { Settings } from './pages/Settings';
 import { ReceiptScanner } from './pages/ReceiptScanner';
 import { Reports } from './pages/Reports';
@@ -42,7 +40,7 @@ const languagesList = [
 ];
 
 export const FinGuideApp: React.FC = () => {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage, t, dir } = useLanguage();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -60,6 +58,7 @@ export const FinGuideApp: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [preferredLang, setPreferredLang] = useState('ur');
   const [registerLangDropdownOpen, setRegisterLangDropdownOpen] = useState(false);
+  const [authLangDropdownOpen, setAuthLangDropdownOpen] = useState(false);
   const [rememberMe, setRememberMe] = useState(() => localStorage.getItem('finguide_remember_me') === 'true');
   const [showAutofillPopup, setShowAutofillPopup] = useState(false);
   const [savedAccounts, setSavedAccounts] = useState<Array<{ email: string; password?: string }>>([]);
@@ -258,15 +257,57 @@ export const FinGuideApp: React.FC = () => {
     // Login View
     if (authView === 'login') {
       return (
-        <div className="min-h-screen bg-[#f4f3ed] text-slate-800 flex items-center justify-center p-6 selection:bg-[#2b4d32]/10 font-sans">
+        <div dir={dir} className="min-h-screen bg-[#f4f3ed] text-slate-800 flex items-center justify-center p-6 selection:bg-[#2b4d32]/10 font-sans relative">
           {/* Back to landing button */}
           <button 
             onClick={() => setAuthView('landing')}
-            className="absolute top-6 left-6 flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#2b4d32] transition-colors"
+            className={`absolute top-6 ${dir === 'rtl' ? 'right-6' : 'left-6'} flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#2b4d32] transition-colors`}
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            <ArrowLeft className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+            {t('back_to_home')}
           </button>
+
+          {/* Floating Language Selector */}
+          <div className={`absolute top-6 ${dir === 'rtl' ? 'left-6' : 'right-6'} z-30`}>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setAuthLangDropdownOpen(!authLangDropdownOpen)}
+                className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-slate-200 px-3 py-1.5 rounded-full text-xs font-bold text-[#2b4d32] shadow-sm hover:border-[#2b4d32] transition-all"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>{languagesList.find((l) => l.code === language)?.label || 'Language'}</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${authLangDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {authLangDropdownOpen && (
+                <div className={`absolute ${dir === 'rtl' ? 'left-0' : 'right-0'} mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-150`}>
+                  <div className="px-3 py-1 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                    {t('select_language')}
+                  </div>
+                  {languagesList.map((lang) => {
+                    const isSelected = language === lang.code;
+                    return (
+                      <button
+                        key={lang.code}
+                        type="button"
+                        onClick={() => {
+                          setLanguage(lang.code as any);
+                          setAuthLangDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3.5 py-2 text-xs font-semibold flex items-center justify-between transition-colors ${
+                          isSelected ? 'bg-[#2b4d32] text-white font-bold' : 'text-slate-700 hover:bg-[#e8f4eb] hover:text-[#2b4d32]'
+                        }`}
+                      >
+                        <span>{lang.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-emerald-300" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
 
           <div className="max-w-4xl w-full bg-white border border-slate-200/80 rounded-[32px] overflow-hidden shadow-xl shadow-slate-200/50 grid md:grid-cols-2 animate-in fade-in zoom-in-95 duration-200">
             {/* Left Panel: Aesthetic archway background */}
@@ -278,16 +319,16 @@ export const FinGuideApp: React.FC = () => {
               <div className="flex-grow flex items-center justify-center z-10">
                 <div className="bg-[#faf9f5]/95 backdrop-blur-sm border border-cream-300 p-6 rounded-2xl shadow-lg max-w-[240px] w-full text-center">
                   <h3 className="font-serif text-lg text-slate-800 leading-relaxed font-bold mb-1" style={{ fontFamily: 'Georgia, serif' }}>
-                    خوش آمدید 🌿
+                    {t('welcome_back')}
                   </h3>
                   <p className="text-[10px] text-slate-500 leading-relaxed">
-                    Apne account mein login karein aur smart financial planning shuru karein.
+                    {t('login_description')}
                   </p>
                 </div>
               </div>
 
               <div className="text-center pt-4 z-10">
-                <span className="text-xs font-bold text-[#2b4d32] bg-[#f4f3ed]/80 px-3 py-1 rounded-full backdrop-blur-sm">آپ کا ذاتی مالی معاون</span>
+                <span className="text-xs font-bold text-[#2b4d32] bg-[#f4f3ed]/80 px-3 py-1 rounded-full backdrop-blur-sm">{t('tagline')}</span>
               </div>
             </div>
 
@@ -295,8 +336,8 @@ export const FinGuideApp: React.FC = () => {
             <div className="md:hidden h-36 relative bg-cover bg-center bg-no-repeat flex items-center justify-center p-4 overflow-hidden" style={{ backgroundImage: "url('/login_sidebar.jpg')" }}>
               <div className="absolute inset-0 bg-[#f4f3ed]/20 pointer-events-none"></div>
               <div className="bg-[#faf9f5]/90 backdrop-blur-sm border border-cream-300 px-4 py-2 rounded-xl text-center z-10 shadow-sm">
-                <h3 className="font-serif text-xs text-slate-800 font-bold">خوش آمدید 🌿</h3>
-                <span className="text-[8px] text-[#2b4d32] font-bold block">آپ کا ذاتی مالی معاون</span>
+                <h3 className="font-serif text-xs text-slate-800 font-bold">{t('welcome_back')}</h3>
+                <span className="text-[8px] text-[#2b4d32] font-bold block">{t('tagline')}</span>
               </div>
             </div>
 
@@ -307,19 +348,19 @@ export const FinGuideApp: React.FC = () => {
                 <div className="flex items-center gap-2">
                   {leafLogo}
                   <span className="font-extrabold text-lg text-slate-900 tracking-tight">
-                    FinGuide <span className="text-[10px] bg-[#2b4d32] text-white px-1.5 py-0.5 rounded align-middle font-bold">AI</span>
+                    {t('app_name')} <span className="text-[10px] bg-[#2b4d32] text-white px-1.5 py-0.5 rounded align-middle font-bold">AI</span>
                   </span>
                 </div>
-                <span className="text-[9px] text-[#2b4d32] font-bold tracking-widest mt-0.5 uppercase">آپ کا مالی ساتھی</span>
+                <span className="text-[9px] text-[#2b4d32] font-bold tracking-widest mt-0.5 uppercase">{t('tagline')}</span>
               </div>
 
               {/* Titles */}
               <div className="text-center mb-6">
                 <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-1.5">
-                  {t('login_welcome')}
+                  {t('welcome_back')}
                 </h2>
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                  {t('login_welcome_sub')}
+                  {t('login_description')}
                 </p>
               </div>
 
@@ -332,14 +373,14 @@ export const FinGuideApp: React.FC = () => {
               <form onSubmit={handleLoginSubmit} className="space-y-4" autoComplete="on">
                 <div>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-4 top-3.5 z-10 pointer-events-none" />
+                    <Mail className={`w-4 h-4 text-slate-400 absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-3.5 z-10 pointer-events-none`} />
                     <input
                       id="login-email"
                       name="username"
                       type="email"
                       autoComplete="username"
                       required
-                      placeholder={t('lbl_email')}
+                      placeholder={t('email')}
                       value={email}
                       onFocus={() => {
                         if (savedAccounts.length > 0) setShowAutofillPopup(true);
@@ -354,14 +395,14 @@ export const FinGuideApp: React.FC = () => {
                         setEmail(e.target.value);
                         if (savedAccounts.length > 0) setShowAutofillPopup(true);
                       }}
-                      className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl pl-11 pr-4 py-3 text-xs outline-none transition-all placeholder-slate-400"
+                      className={`w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl ${dir === 'rtl' ? 'pr-11 pl-4' : 'pl-11 pr-4'} py-3 text-xs text-slate-900 font-semibold outline-none transition-all placeholder:text-slate-400`}
                     />
 
-                    {/* Remembered Accounts Autofill Popup Matching User Screenshot */}
+                    {/* Remembered Accounts Autofill Popup */}
                     {showAutofillPopup && savedAccounts.length > 0 && (
-                      <div className="absolute left-6 top-full mt-2.5 bg-[#1a232a] text-white border border-[#2d3748] rounded-2xl shadow-2xl z-50 py-1.5 min-w-[280px] animate-in fade-in zoom-in-95 duration-150">
+                      <div className={`absolute ${dir === 'rtl' ? 'right-6' : 'left-6'} top-full mt-2.5 bg-[#1a232a] text-white border border-[#2d3748] rounded-2xl shadow-2xl z-50 py-1.5 min-w-[280px] animate-in fade-in zoom-in-95 duration-150`}>
                         {/* Triangular Pointer Arrow */}
-                        <div className="absolute -top-1.5 left-7 w-3 h-3 bg-[#1a232a] border-t border-l border-[#2d3748] transform rotate-45" />
+                        <div className={`absolute -top-1.5 ${dir === 'rtl' ? 'right-7' : 'left-7'} w-3 h-3 bg-[#1a232a] border-t border-l border-[#2d3748] transform rotate-45`} />
 
                         <div className="px-3.5 py-1 text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">
                           Saved Account
@@ -417,22 +458,22 @@ export const FinGuideApp: React.FC = () => {
 
                 <div>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-4 top-3.5 z-10 pointer-events-none" />
+                    <Lock className={`w-4 h-4 text-slate-400 absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-3.5 z-10 pointer-events-none`} />
                     <input
                       id="login-password"
                       name="password"
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="current-password"
                       required
-                      placeholder={t('lbl_password')}
+                      placeholder={t('password')}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl pl-11 pr-11 py-3 text-xs outline-none transition-all placeholder-slate-400"
+                      className={`w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl ${dir === 'rtl' ? 'pr-11 pl-11' : 'pl-11 pr-11'} py-3 text-xs text-slate-900 font-semibold outline-none transition-all placeholder:text-slate-400`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-3.5 text-slate-400 hover:text-[#2b4d32] transition-colors z-10"
+                      className={`absolute ${dir === 'rtl' ? 'left-4' : 'right-4'} top-3.5 text-slate-400 hover:text-[#2b4d32] transition-colors z-10`}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -440,7 +481,7 @@ export const FinGuideApp: React.FC = () => {
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 pt-1">
-                  <button type="button" className="hover:text-[#2b4d32] transition-colors">Forgot Password?</button>
+                  <button type="button" className="hover:text-[#2b4d32] transition-colors">{t('forgot_password')}</button>
                   <label className="flex items-center gap-1.5 cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -448,7 +489,7 @@ export const FinGuideApp: React.FC = () => {
                       onChange={(e) => setRememberMe(e.target.checked)}
                       className="rounded text-[#2b4d32] focus:ring-[#2b4d32]/20 border-slate-300 w-3.5 h-3.5 cursor-pointer accent-[#2b4d32]"
                     />
-                    <span className="font-semibold text-slate-600">Remember Me</span>
+                    <span className="font-semibold text-slate-600">{t('remember_me')}</span>
                   </label>
                 </div>
 
@@ -457,7 +498,7 @@ export const FinGuideApp: React.FC = () => {
                   disabled={authLoading}
                   className="w-full bg-[#2b4d32] hover:bg-[#386242] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-emerald-900/10 text-xs flex items-center justify-center gap-2 mt-2"
                 >
-                  {authLoading ? 'Signing in...' : t('btn_login')} <ArrowRight className="w-4 h-4" />
+                  {authLoading ? '...' : t('login')} <ArrowRight className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
                 </button>
               </form>
 
@@ -478,15 +519,15 @@ export const FinGuideApp: React.FC = () => {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                 </svg>
-                Continue with Google
+                {t('continue_google')}
               </button>
 
               {/* Footer link */}
               <div className="mt-6 text-center text-xs">
                 <p className="text-slate-500 font-medium">
-                  {t('login_no_account')}{' '}
+                  {t('dont_have_account')}{' '}
                   <button onClick={() => setAuthView('register')} className="text-[#2b4d32] font-black hover:underline">
-                    {t('login_create_account')}
+                    {t('create_account')}
                   </button>
                 </p>
               </div>
@@ -499,23 +540,63 @@ export const FinGuideApp: React.FC = () => {
     // Register View
     if (authView === 'register') {
       return (
-        <div className="min-h-screen bg-[#f4f3ed] text-slate-850 flex items-center justify-center p-6 selection:bg-[#2b4d32]/10 font-sans">
+        <div dir={dir} className="min-h-screen bg-[#f4f3ed] text-slate-850 flex items-center justify-center p-6 selection:bg-[#2b4d32]/10 font-sans relative">
           {/* Back to landing button */}
           <button 
             onClick={() => setAuthView('landing')}
-            className="absolute top-6 left-6 flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#2b4d32] transition-colors"
+            className={`absolute top-6 ${dir === 'rtl' ? 'right-6' : 'left-6'} flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#2b4d32] transition-colors`}
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            <ArrowLeft className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+            {t('back_to_home')}
           </button>
 
+          {/* Floating Language Selector */}
+          <div className={`absolute top-6 ${dir === 'rtl' ? 'left-6' : 'right-6'} z-30`}>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setAuthLangDropdownOpen(!authLangDropdownOpen)}
+                className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-slate-200 px-3 py-1.5 rounded-full text-xs font-bold text-[#2b4d32] shadow-sm hover:border-[#2b4d32] transition-all"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>{languagesList.find((l) => l.code === language)?.label || 'Language'}</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${authLangDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {authLangDropdownOpen && (
+                <div className={`absolute ${dir === 'rtl' ? 'left-0' : 'right-0'} mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-150`}>
+                  <div className="px-3 py-1 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                    {t('select_language')}
+                  </div>
+                  {languagesList.map((lang) => {
+                    const isSelected = language === lang.code;
+                    return (
+                      <button
+                        key={lang.code}
+                        type="button"
+                        onClick={() => {
+                          setLanguage(lang.code as any);
+                          setPreferredLang(lang.code);
+                          setAuthLangDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3.5 py-2 text-xs font-semibold flex items-center justify-between transition-colors ${
+                          isSelected ? 'bg-[#2b4d32] text-white font-bold' : 'text-slate-700 hover:bg-[#e8f4eb] hover:text-[#2b4d32]'
+                        }`}
+                      >
+                        <span>{lang.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-emerald-300" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="max-w-4xl w-full bg-white border border-slate-200/80 rounded-[32px] overflow-hidden shadow-xl shadow-slate-200/50 grid md:grid-cols-2 animate-in fade-in zoom-in-95 duration-200">
-            {/* Left Panel: Aesthetic illustration & Urdu text */}
+            {/* Left Panel: Aesthetic illustration & text */}
             <div className="hidden md:flex flex-col justify-between p-8 relative bg-cover bg-center bg-no-repeat overflow-hidden" style={{ backgroundImage: "url('/register_sidebar.jpg')" }}>
-              {/* Overlay shadow to give it more depth and make the calligraphy frame pop */}
               <div className="absolute inset-0 bg-[#1b321f]/15 pointer-events-none"></div>
-              
-              {/* Spacer */}
               <div></div>
 
               {/* Framed calligraphy overlaying the background image */}
@@ -531,7 +612,7 @@ export const FinGuideApp: React.FC = () => {
 
               {/* Tagline footer */}
               <div className="text-center pt-4 z-10">
-                <span className="text-xs font-bold text-white bg-[#1b321f]/85 px-4 py-1.5 rounded-full backdrop-blur-sm">FinGuide AI کے ساتھ اپنے مالی سفر کا آغاز کریں</span>
+                <span className="text-xs font-bold text-white bg-[#1b321f]/85 px-4 py-1.5 rounded-full backdrop-blur-sm">{t('financial_goals')}</span>
               </div>
             </div>
 
@@ -551,19 +632,19 @@ export const FinGuideApp: React.FC = () => {
                 <div className="flex items-center gap-2">
                   {leafLogo}
                   <span className="font-extrabold text-lg text-slate-900 tracking-tight">
-                    FinGuide <span className="text-[10px] bg-[#2b4d32] text-white px-1.5 py-0.5 rounded align-middle font-bold">AI</span>
+                    {t('app_name')} <span className="text-[10px] bg-[#2b4d32] text-white px-1.5 py-0.5 rounded align-middle font-bold">AI</span>
                   </span>
                 </div>
-                <span className="text-[9px] text-[#2b4d32] font-bold tracking-widest mt-0.5 uppercase">آپ کا مالی ساتھی</span>
+                <span className="text-[9px] text-[#2b4d32] font-bold tracking-widest mt-0.5 uppercase">{t('tagline')}</span>
               </div>
 
               {/* Titles */}
               <div className="text-center mb-6">
                 <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                  {t('register_title')}
+                  {t('create_account')}
                 </h2>
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                  {t('register_sub')}
+                  {t('register_description')}
                 </p>
               </div>
 
@@ -577,41 +658,41 @@ export const FinGuideApp: React.FC = () => {
                 {/* Name split into three parts: First, Middle, Last */}
                 <div>
                   <label className="block text-[10px] font-extrabold text-[#2b4d32] uppercase tracking-wider mb-1">
-                    Full Name
+                    {t('full_name')}
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div className="relative">
-                      <UserIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3.5" />
+                      <UserIcon className={`w-3.5 h-3.5 text-slate-400 absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-3.5`} />
                       <input
                         type="text"
                         required
-                        placeholder="First Name *"
+                        placeholder={`${t('first_name')} *`}
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl pl-8 pr-2.5 py-2.5 text-xs outline-none transition-all placeholder-slate-400"
+                        className={`w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl ${dir === 'rtl' ? 'pr-8 pl-2.5' : 'pl-8 pr-2.5'} py-2.5 text-xs text-slate-900 font-semibold outline-none transition-all placeholder:text-slate-400`}
                       />
                     </div>
 
                     <div className="relative">
-                      <UserIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3.5" />
+                      <UserIcon className={`w-3.5 h-3.5 text-slate-400 absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-3.5`} />
                       <input
                         type="text"
-                        placeholder="Middle Name"
+                        placeholder={t('middle_name')}
                         value={middleName}
                         onChange={(e) => setMiddleName(e.target.value)}
-                        className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl pl-8 pr-2.5 py-2.5 text-xs outline-none transition-all placeholder-slate-400"
+                        className={`w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl ${dir === 'rtl' ? 'pr-8 pl-2.5' : 'pl-8 pr-2.5'} py-2.5 text-xs text-slate-900 font-semibold outline-none transition-all placeholder:text-slate-400`}
                       />
                     </div>
 
                     <div className="relative">
-                      <UserIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3.5" />
+                      <UserIcon className={`w-3.5 h-3.5 text-slate-400 absolute ${dir === 'rtl' ? 'right-3' : 'left-3'} top-3.5`} />
                       <input
                         type="text"
                         required
-                        placeholder="Last Name *"
+                        placeholder={`${t('last_name')} *`}
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl pl-8 pr-2.5 py-2.5 text-xs outline-none transition-all placeholder-slate-400"
+                        className={`w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl ${dir === 'rtl' ? 'pr-8 pl-2.5' : 'pl-8 pr-2.5'} py-2.5 text-xs text-slate-900 font-semibold outline-none transition-all placeholder:text-slate-400`}
                       />
                     </div>
                   </div>
@@ -620,31 +701,31 @@ export const FinGuideApp: React.FC = () => {
                 {/* Email */}
                 <div>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-4 top-3.5" />
+                    <Mail className={`w-4 h-4 text-slate-400 absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-3.5`} />
                     <input
                       type="email"
                       required
-                      placeholder={t('lbl_email')}
+                      placeholder={t('email')}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl pl-11 pr-4 py-3 text-xs outline-none transition-all placeholder-slate-400"
+                      className={`w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl ${dir === 'rtl' ? 'pr-11 pl-4' : 'pl-11 pr-4'} py-3 text-xs text-slate-900 font-semibold outline-none transition-all placeholder:text-slate-400`}
                     />
                   </div>
                 </div>
 
-                {/* Date of Birth (Added after email) */}
+                {/* Date of Birth */}
                 <div>
                   <label className="block text-[10px] font-extrabold text-[#2b4d32] uppercase tracking-wider mb-1">
-                    Date of Birth
+                    {t('date_of_birth')}
                   </label>
                   <div className="relative">
-                    <Calendar className="w-4 h-4 text-slate-400 absolute left-4 top-3.5 pointer-events-none" />
+                    <Calendar className={`w-4 h-4 text-slate-400 absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-3.5 pointer-events-none`} />
                     <input
                       type="date"
                       required
                       value={dateOfBirth}
                       onChange={(e) => setDateOfBirth(e.target.value)}
-                      className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl pl-11 pr-4 py-2.5 text-xs outline-none transition-all text-slate-700 font-medium cursor-pointer"
+                      className={`w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl ${dir === 'rtl' ? 'pr-11 pl-4' : 'pl-11 pr-4'} py-2.5 text-xs text-slate-900 font-semibold outline-none transition-all cursor-pointer`}
                     />
                   </div>
                 </div>
@@ -653,28 +734,28 @@ export const FinGuideApp: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <div className="relative">
-                      <Lock className="w-4 h-4 text-slate-400 absolute left-4 top-3.5" />
+                      <Lock className={`w-4 h-4 text-slate-400 absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-3.5`} />
                       <input
                         type="password"
                         required
-                        placeholder={t('lbl_password')}
+                        placeholder={t('password')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl pl-11 pr-4 py-3 text-xs outline-none transition-all placeholder-slate-400"
+                        className={`w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl ${dir === 'rtl' ? 'pr-11 pl-4' : 'pl-11 pr-4'} py-3 text-xs text-slate-900 font-semibold outline-none transition-all placeholder:text-slate-400`}
                       />
                     </div>
                   </div>
 
                   <div>
                     <div className="relative">
-                      <Lock className="w-4 h-4 text-slate-400 absolute left-4 top-3.5" />
+                      <Lock className={`w-4 h-4 text-slate-400 absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-3.5`} />
                       <input
                         type="password"
                         required
-                        placeholder="Confirm Password"
+                        placeholder={t('confirm_password')}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl pl-11 pr-4 py-3 text-xs outline-none transition-all placeholder-slate-400"
+                        className={`w-full bg-white border border-slate-200 focus:border-[#2b4d32]/60 focus:ring-4 focus:ring-[#2b4d32]/5 rounded-xl ${dir === 'rtl' ? 'pr-11 pl-4' : 'pl-11 pr-4'} py-3 text-xs text-slate-900 font-semibold outline-none transition-all placeholder:text-slate-400`}
                       />
                     </div>
                   </div>
@@ -683,15 +764,15 @@ export const FinGuideApp: React.FC = () => {
                 {/* Preferred Language custom dropdown */}
                 <div className="relative">
                   <label className="block text-[10px] font-extrabold text-[#2b4d32] uppercase tracking-wider mb-1.5">
-                    {t('lbl_language')}
+                    {t('preferred_language')}
                   </label>
                   <div className="relative">
                     <button
                       type="button"
                       onClick={() => setRegisterLangDropdownOpen(!registerLangDropdownOpen)}
-                      className="w-full bg-[#e8f4eb] text-black font-extrabold border-2 border-[#2b4d32] focus:border-emerald-600 focus:ring-4 focus:ring-[#2b4d32]/15 rounded-xl pl-11 pr-4 py-3 text-xs outline-none transition-all flex items-center justify-between cursor-pointer text-left"
+                      className={`w-full bg-[#e8f4eb] text-black font-extrabold border-2 border-[#2b4d32] focus:border-emerald-600 focus:ring-4 focus:ring-[#2b4d32]/15 rounded-xl ${dir === 'rtl' ? 'pr-11 pl-4 text-right' : 'pl-11 pr-4 text-left'} py-3 text-xs outline-none transition-all flex items-center justify-between cursor-pointer`}
                     >
-                      <Globe className="w-4 h-4 text-[#2b4d32] absolute left-4 top-3.5 pointer-events-none" />
+                      <Globe className={`w-4 h-4 text-[#2b4d32] absolute ${dir === 'rtl' ? 'right-4' : 'left-4'} top-3.5 pointer-events-none`} />
                       <span className="text-black font-extrabold">
                         {languagesList.find((l) => l.code === preferredLang)?.label || 'Urdu (اردو)'}
                       </span>
@@ -701,7 +782,7 @@ export const FinGuideApp: React.FC = () => {
                     {registerLangDropdownOpen && (
                       <div className="absolute left-0 right-0 bottom-full mb-1.5 bg-white border-2 border-[#2b4d32] rounded-xl shadow-2xl z-50 overflow-hidden py-1 max-h-64 overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-150">
                         <div className="px-3 py-1.5 border-b border-slate-100 bg-slate-50/80 text-[10px] font-bold text-[#2b4d32] uppercase tracking-wider">
-                          Select Language ({languagesList.length})
+                          {t('select_language')} ({languagesList.length})
                         </div>
                         {languagesList.map((lang) => {
                           const isSelected = preferredLang === lang.code;
@@ -711,6 +792,7 @@ export const FinGuideApp: React.FC = () => {
                               type="button"
                               onClick={() => {
                                 setPreferredLang(lang.code);
+                                setLanguage(lang.code as any);
                                 setRegisterLangDropdownOpen(false);
                               }}
                               className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between ${
@@ -734,16 +816,16 @@ export const FinGuideApp: React.FC = () => {
                   disabled={authLoading}
                   className="w-full bg-[#2b4d32] hover:bg-[#386242] text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-emerald-900/10 text-xs flex items-center justify-center gap-2 mt-2"
                 >
-                  {authLoading ? 'Creating...' : t('btn_register')} <ArrowRight className="w-4 h-4" />
+                  {authLoading ? '...' : t('register')} <ArrowRight className={`w-4 h-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
                 </button>
               </form>
 
               {/* Already registered */}
               <div className="mt-6 text-center text-xs">
                 <p className="text-slate-500 font-medium">
-                  {t('register_has_account')}{' '}
+                  {t('already_have_account')}{' '}
                   <button onClick={() => setAuthView('login')} className="text-[#2b4d32] font-black hover:underline">
-                    {t('register_login_link')}
+                    {t('login_here')}
                   </button>
                 </p>
               </div>
@@ -769,7 +851,13 @@ export const FinGuideApp: React.FC = () => {
       refreshCounter={refreshCounter}
     >
       {currentTab === 'dashboard' && <Dashboard userName={user?.name || 'Ahad Ali'} onTabChange={setCurrentTab} refreshCounter={refreshCounter} />}
-      {currentTab === 'ai-assistant' && <AIAssistant onRefreshData={handleRefreshData} />}
+      {currentTab === 'ai-assistant' && (
+        <AIAssistant
+          onRefreshData={handleRefreshData}
+          onNavigateToGoals={() => setCurrentTab('goals')}
+          onTabChange={setCurrentTab}
+        />
+      )}
       {currentTab === 'goals' && <Goals refreshCounter={refreshCounter} onRefreshData={handleRefreshData} />}
       {currentTab === 'money-manager' && <MoneyManager refreshCounter={refreshCounter} onRefreshData={handleRefreshData} />}
       {currentTab === 'reports' && <Reports refreshCounter={refreshCounter} />}
@@ -779,9 +867,7 @@ export const FinGuideApp: React.FC = () => {
           onNavigateToMoneyManager={() => setCurrentTab('money-manager')}
         />
       )}
-      {currentTab === 'simulator' && <Simulator />}
       {currentTab === 'scam-detector' && <ScamDetector />}
-      {currentTab === 'academy' && <Academy onTabChange={setCurrentTab} />}
       {currentTab === 'settings' && <Settings onRefreshData={handleRefreshData} />}
     </DashboardLayout>
   );

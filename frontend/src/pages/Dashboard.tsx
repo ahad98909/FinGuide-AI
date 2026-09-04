@@ -120,7 +120,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ userName, refreshCounter, 
     setChatLoading(true);
 
     try {
-      const response = await api.chat(userMsg);
+      const response = await api.chat(userMsg, language);
       setChatMessages((prev) => [...prev, { sender: 'ai', text: response.response }]);
     } catch (err) {
       setChatMessages((prev) => [...prev, { sender: 'ai', text: 'Maaf kijiyega, server se rabta nahi ho saka.' }]);
@@ -549,7 +549,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ userName, refreshCounter, 
               placeholder="Yahan likhiye (e.g. Save for Honda 70)..."
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              className="flex-grow bg-black/40 border border-white/15 focus:border-emerald-400/80 rounded-xl px-3 py-2 text-xs outline-none text-white placeholder-slate-400 transition-all"
+              className="flex-grow bg-white border border-slate-300 focus:border-[#2b4d32] rounded-xl px-3 py-2 text-xs outline-none text-slate-900 placeholder:text-slate-400 font-semibold transition-all"
             />
             <button
               type="submit"
